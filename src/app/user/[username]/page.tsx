@@ -35,6 +35,7 @@ export default function UserPage() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [oldestLogId, setOldestLogId] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
   useEffect(() => {
     setMounted(true);
@@ -64,6 +65,16 @@ export default function UserPage() {
     setLoading(true);
     const startDate = getTimeRangeDate();
     
+    // Fetch total count
+    const { count } = await supabase
+      .from('logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('sender', username)
+      .gte('created_at', startDate.toISOString());
+    
+    setTotalCount(count || 0);
+    
+    // Fetch first 100 logs
     const { data } = await supabase
       .from('logs')
       .select('*')
@@ -134,7 +145,7 @@ export default function UserPage() {
               {username}님의 채팅
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {getTimeRangeLabel()} 동안 {logs.length}개의 채팅
+              {getTimeRangeLabel()} 동안 {totalCount.toLocaleString()}개의 채팅
             </p>
           </div>
           

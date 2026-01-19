@@ -45,13 +45,33 @@ export default function Dashboard() {
 
   const fetchLogs = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('logs')
-      .select('*')
-      .order('created_at', { ascending: true });
-    if (data) {
-      setLogs(data);
+    let allLogs: any[] = [];
+    let from = 0;
+    const batchSize = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('logs')
+        .select('*')
+        .order('created_at', { ascending: true })
+        .range(from, from + batchSize - 1);
+      
+      if (error) {
+        console.error('Error fetching logs:', error);
+        break;
+      }
+      
+      if (data && data.length > 0) {
+        allLogs = [...allLogs, ...data];
+        from += batchSize;
+        hasMore = data.length === batchSize;
+      } else {
+        hasMore = false;
+      }
     }
+
+    setLogs(allLogs);
     setLoading(false);
   };
 
