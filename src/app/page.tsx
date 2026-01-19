@@ -1,6 +1,7 @@
 'use client';
 import { createClient } from '@supabase/supabase-js';
 import { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -86,9 +87,16 @@ export default function Home() {
     <main className="h-screen flex flex-col bg-gray-50 max-w-2xl mx-auto border-x border-gray-200 shadow-xl relative">
       
       <div className="flex-none p-4 bg-white border-b border-gray-200 z-10 shadow-sm">
-        <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-          👀 테탑하실분 염탐
-        </h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            👀 테탑하실분 염탐
+          </h1>
+          <Link href="/dashboard">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+              📊 대시보드
+            </button>
+          </Link>
+        </div>
       </div>
 
       <div 
@@ -105,9 +113,6 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs">
                   {log.sender || '(알 수 없음)'}
-                </span>
-                <span className="text-gray-400 text-xs">
-                  @ {log.room || 'unknown'}
                 </span>
               </div>
               <span className="text-[10px] text-gray-400">
