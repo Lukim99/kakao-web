@@ -1,6 +1,6 @@
 'use client';
 import { createClient } from '@supabase/supabase-js';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +9,7 @@ const supabase = createClient(
 
 export default function Home() {
   const [logs, setLogs] = useState<any[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const fetchLogs = async () => {
     const { data } = await supabase
@@ -38,13 +39,19 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [logs]);
+
   return (
     <main className="p-6 max-w-2xl mx-auto bg-gray-50 min-h-screen flex flex-col">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-800">👀 테탑하실분 염탐</h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col-reverse space-y-4 space-y-reverse">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto flex flex-col-reverse space-y-4 space-y-reverse">
         {logs.map((log) => (
           <div 
             key={log.id} 
