@@ -92,8 +92,8 @@ export default function UserPage() {
       <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <Link href="/dashboard" className="text-blue-600 dark:text-blue-400 hover:underline text-sm mb-2 inline-block">
-              ← 대시보드로 돌아가기
+            <Link href="/rank" className="text-blue-600 dark:text-blue-400 hover:underline text-sm mb-2 inline-block">
+              ← 순위표로 돌아가기
             </Link>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {username}님의 채팅

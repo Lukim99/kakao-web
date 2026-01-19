@@ -110,9 +110,9 @@ export default function Home() {
             >
               {theme === 'dark' ? '🌙' : '☀️'}
             </button>
-            <Link href="/dashboard">
+            <Link href="/rank">
               <button className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
-                📊 대시보드
+                📊 순위표
               </button>
             </Link>
           </div>
