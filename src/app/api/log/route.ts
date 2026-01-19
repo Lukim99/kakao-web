@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     const sender = formData.get('sender') as string;
     const room = formData.get('room') as string;
     const imageFile = formData.get('image') as File | null;
+    const externalImageUrl = formData.get('image_url') as string | null;
 
     let publicImageUrl = null;
 
@@ -38,6 +39,8 @@ export async function POST(request: Request) {
             .getPublicUrl(fileName);
             
         publicImageUrl = urlData.publicUrl;
+    } else if (externalImageUrl) {
+        publicImageUrl = externalImageUrl;
     }
 
     const { error: dbError } = await supabase
