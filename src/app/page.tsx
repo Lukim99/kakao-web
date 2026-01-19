@@ -108,7 +108,7 @@ export default function Home() {
               className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
               title="테마 변경"
             >
-              {theme === 'dark' ? '☀️' : '🌙'}
+              {theme === 'dark' ? '🌙' : '☀️'}
             </button>
             <Link href="/dashboard">
               <button className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">

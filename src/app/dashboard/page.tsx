@@ -124,7 +124,7 @@ export default function Dashboard() {
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
             >
-              {theme === 'dark' ? '라이트 모드' : '다크 모드'}
+              {theme === 'dark' ? '🌙' : '☀️'}
             </button>
           </div>
         </div>
