@@ -16,6 +16,9 @@ export default function Home() {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [oldestLogId, setOldestLogId] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -27,10 +30,47 @@ export default function Home() {
     const { data } = await supabase
       .from('logs')
       .select('*')
-      .order('created_at', { ascending: true });
-    if (data) {
-      setLogs(data);
+      .order('created_at', { ascending: false })
+      .limit(100);
+    
+    if (data && data.length > 0) {
+      const reversedData = [...data].reverse();
+      setLogs(reversedData);
+      setOldestLogId(reversedData[0].id);
+      setHasMore(data.length === 100);
     }
+  };
+
+  const loadMoreLogs = async () => {
+    if (!oldestLogId || loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    const previousScrollHeight = scrollRef.current?.scrollHeight || 0;
+    
+    const { data } = await supabase
+      .from('logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .lt('id', oldestLogId)
+      .limit(100);
+    
+    if (data && data.length > 0) {
+      const reversedData = [...data].reverse();
+      setLogs((prevLogs) => [...reversedData, ...prevLogs]);
+      setOldestLogId(reversedData[0].id);
+      setHasMore(data.length === 100);
+      
+      setTimeout(() => {
+        if (scrollRef.current) {
+          const newScrollHeight = scrollRef.current.scrollHeight;
+          scrollRef.current.scrollTop = newScrollHeight - previousScrollHeight;
+        }
+      }, 0);
+    } else {
+      setHasMore(false);
+    }
+    
+    setLoadingMore(false);
   };
 
   const scrollToBottom = () => {
@@ -124,6 +164,28 @@ export default function Home() {
         onScroll={onScroll}
         className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scroll-smooth"
       >
+        {hasMore && logs.length > 0 && (
+          <div className="flex justify-center pb-3">
+            <button
+              onClick={loadMoreLogs}
+              disabled={loadingMore}
+              className="px-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  로딩 중...
+                </span>
+              ) : (
+                '더 보기'
+              )}
+            </button>
+          </div>
+        )}
+        
         {logs.map((log) => (
           <div 
             key={log.id} 

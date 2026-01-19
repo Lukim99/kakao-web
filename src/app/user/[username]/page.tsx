@@ -32,6 +32,9 @@ export default function UserPage() {
   const [loading, setLoading] = useState(true);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [oldestLogId, setOldestLogId] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -66,12 +69,44 @@ export default function UserPage() {
       .select('*')
       .eq('sender', username)
       .gte('created_at', startDate.toISOString())
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100);
     
-    if (data) {
+    if (data && data.length > 0) {
       setLogs(data);
+      setOldestLogId(data[data.length - 1].id);
+      setHasMore(data.length === 100);
+    } else {
+      setLogs([]);
+      setHasMore(false);
     }
     setLoading(false);
+  };
+
+  const loadMoreLogs = async () => {
+    if (!oldestLogId || loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    const startDate = getTimeRangeDate();
+    
+    const { data } = await supabase
+      .from('logs')
+      .select('*')
+      .eq('sender', username)
+      .gte('created_at', startDate.toISOString())
+      .lt('id', oldestLogId)
+      .order('created_at', { ascending: false })
+      .limit(100);
+    
+    if (data && data.length > 0) {
+      setLogs((prevLogs) => [...prevLogs, ...data]);
+      setOldestLogId(data[data.length - 1].id);
+      setHasMore(data.length === 100);
+    } else {
+      setHasMore(false);
+    }
+    
+    setLoadingMore(false);
   };
 
   const getTimeRangeLabel = () => {
@@ -146,46 +181,70 @@ export default function UserPage() {
                 </p>
               </div>
             ) : (
-              logs.map((log) => (
-                <div 
-                  key={log.id} 
-                  className="p-3 sm:p-4 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm bg-white dark:bg-gray-800 hover:shadow-md dark:hover:shadow-lg transition-all"
-                >
-                  <div className="flex justify-between items-center mb-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded text-xs">
-                        {log.sender}
+              <>
+                {logs.map((log) => (
+                  <div 
+                    key={log.id} 
+                    className="p-3 sm:p-4 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm bg-white dark:bg-gray-800 hover:shadow-md dark:hover:shadow-lg transition-all"
+                  >
+                    <div className="flex justify-between items-center mb-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded text-xs">
+                          {log.sender}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                        {new Date(log.created_at).toLocaleString('ko-KR', { 
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                      {new Date(log.created_at).toLocaleString('ko-KR', { 
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </span>
+
+                    {log.image_url && (
+                      <div className="mb-3 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+                        <img 
+                          src={log.image_url} 
+                          alt="첨부 이미지" 
+                          className="w-auto h-auto max-w-full"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+
+                    {!log.image_url && (
+                      <p className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                        {log.content}
+                      </p>
+                    )}
                   </div>
-
-                  {log.image_url && (
-                    <div className="mb-3 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
-                      <img 
-                        src={log.image_url} 
-                        alt="첨부 이미지" 
-                        className="w-auto h-auto max-w-full"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
-
-                  {!log.image_url && (
-                    <p className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                      {log.content}
-                    </p>
-                  )}
-                </div>
-              ))
+                ))}
+                
+                {hasMore && (
+                  <div className="flex justify-center pt-3">
+                    <button
+                      onClick={loadMoreLogs}
+                      disabled={loadingMore}
+                      className="px-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loadingMore ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          로딩 중...
+                        </span>
+                      ) : (
+                        '더 보기'
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
