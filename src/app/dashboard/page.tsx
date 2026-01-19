@@ -3,8 +3,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,7 +19,6 @@ interface UserStats {
   percentage: number;
 }
 
-const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#f97316'];
 
 export default function Dashboard() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -28,6 +27,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -115,17 +115,17 @@ export default function Dashboard() {
           </div>
           
           <div className="flex gap-3">
-            <Link href="/">
-              <button className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
-                👀 염탐하러 가기
-              </button>
-            </Link>
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
             >
               {theme === 'dark' ? '🌙' : '☀️'}
             </button>
+            <Link href="/">
+              <button className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                👀 염탐하러 가기
+              </button>
+            </Link>
           </div>
         </div>
 
@@ -153,60 +153,14 @@ export default function Dashboard() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                {getTimeRangeLabel()} 채팅량
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                🏆 {getTimeRangeLabel()} 채팅 순위
               </h2>
-              <div className="pointer-events-none select-none">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={userStats.slice(0, 10) as any}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#374151' : '#e5e7eb'} />
-                    <XAxis 
-                      dataKey="sender" 
-                      tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280' }} />
-                    <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                채팅 비율
-              </h2>
-              <div className="pointer-events-none select-none">
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={userStats.slice(0, 8) as any}
-                      dataKey="count"
-                      nameKey="sender"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label
-                    >
-                      {userStats.slice(0, 8).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Legend wrapperStyle={{ color: theme === 'dark' ? '#ffffff' : '#000000' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 lg:col-span-2">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                채팅 순위
-              </h2>
-              <div className="overflow-x-auto">
+              
+              {/* Desktop View */}
+              <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b-2 border-gray-200 dark:border-gray-700">
@@ -220,7 +174,8 @@ export default function Dashboard() {
                     {userStats.map((stat, index) => (
                       <tr 
                         key={stat.sender}
-                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => router.push(`/user/${encodeURIComponent(stat.sender)}?range=${timeRange}`)}
+                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                       >
                         <td className="py-3 px-4">
                           <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
@@ -229,7 +184,7 @@ export default function Dashboard() {
                             index === 2 ? 'bg-orange-400 text-orange-900' :
                             'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                           }`}>
-                            {index === 0 ? '1' : index === 1 ? '2' : index === 2 ? '3' : index + 1}
+                            {index + 1}
                           </span>
                         </td>
                         <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{stat.sender}</td>
@@ -253,6 +208,49 @@ export default function Dashboard() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile View */}
+              <div className="sm:hidden space-y-3">
+                {userStats.map((stat, index) => (
+                  <div
+                    key={stat.sender}
+                    onClick={() => router.push(`/user/${encodeURIComponent(stat.sender)}?range=${timeRange}`)}
+                    className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-all cursor-pointer active:scale-95"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-lg ${
+                        index === 0 ? 'bg-yellow-400 text-yellow-900' :
+                        index === 1 ? 'bg-gray-300 text-gray-800' :
+                        index === 2 ? 'bg-orange-400 text-orange-900' :
+                        'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                      }`}>
+                        {index + 1}
+                      </span>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-900 dark:text-white text-lg">{stat.sender}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">채팅 수</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{stat.count.toLocaleString()}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">비율</span>
+                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{stat.percentage.toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
+                          <div 
+                            className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                            style={{ width: `${stat.percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
               
               {userStats.length === 0 && (
