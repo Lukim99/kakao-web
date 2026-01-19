@@ -9,12 +9,12 @@ const supabase = createClient(
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { text } = body; // 봇에서 보낸 { "text": "내용" }을 받음
+  const { text, sender, room } = body; // 봇에서 보낸 { "text": "내용" }을 받음
 
   // DB에 저장
   const { error } = await supabase
     .from('logs')
-    .insert([{ content: text }]);
+    .insert([{ content: text, sender: sender, room: room }]);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
