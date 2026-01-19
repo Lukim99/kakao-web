@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,8 +14,14 @@ export default function Home() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNewMsgBtn, setShowNewMsgBtn] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchLogs = async () => {
     const { data } = await supabase
@@ -83,56 +90,69 @@ export default function Home() {
     }
   }, [logs]);
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <main className="h-screen flex flex-col bg-gray-50 max-w-2xl mx-auto border-x border-gray-200 shadow-xl relative">
+    <main className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900 max-w-2xl mx-auto border-x border-gray-200 dark:border-gray-700 shadow-xl relative transition-colors">
       
-      <div className="flex-none p-4 bg-white border-b border-gray-200 z-10 shadow-sm">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+      <div className="flex-none p-3 sm:p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 shadow-sm">
+        <div className="flex justify-between items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
             👀 테탑하실분 염탐
           </h1>
-          <Link href="/dashboard">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-              📊 대시보드
+          <div className="flex gap-2">
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+              title="테마 변경"
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
             </button>
-          </Link>
+            <Link href="/dashboard">
+              <button className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
+                📊 대시보드
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
 
       <div 
         ref={scrollRef}
         onScroll={onScroll}
-        className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
+        className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scroll-smooth"
       >
         {logs.map((log) => (
           <div 
             key={log.id} 
-            className="p-4 border border-gray-100 rounded-2xl shadow-sm bg-white hover:shadow-md transition-all"
+            className="p-3 sm:p-4 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm bg-white dark:bg-gray-800 hover:shadow-md dark:hover:shadow-lg transition-all"
           >
             <div className="flex justify-between items-center mb-2 text-sm">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs">
+                <span className="font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded text-xs">
                   {log.sender || '(알 수 없음)'}
                 </span>
               </div>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-[10px] text-gray-400 dark:text-gray-500">
                 {new Date(log.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
 
             {log.image_url && (
-              <div className="mb-3 rounded-lg overflow-hidden border border-gray-100">
+              <div className="mb-3 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
                 <img 
                   src={log.image_url} 
                   alt="첨부 이미지" 
-                  className="w-auto h-auto"
+                  className="w-auto h-auto max-w-full"
                   loading="lazy"
                 />
               </div>
             )}
 
             {!log.image_url && (
-              <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap break-words">
+              <p className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed whitespace-pre-wrap break-words">
                 {log.content}
               </p>
             )}
@@ -140,7 +160,7 @@ export default function Home() {
         ))}
 
         {logs.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+          <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-2">
             <p>텅 비었습니다.</p>
             <p className="text-sm">채팅방에서 메시지를 보내보세요!</p>
           </div>

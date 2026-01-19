@@ -111,14 +111,13 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📊 대시보드</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">채팅 통계 및 순위</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📊 테탑하실분 채팅 순위</h1>
           </div>
           
           <div className="flex gap-3">
             <Link href="/">
               <button className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
-                👀 메인으로
+                👀 염탐하러 가기
               </button>
             </Link>
             <button
@@ -159,65 +158,53 @@ export default function Dashboard() {
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                 {getTimeRangeLabel()} 채팅량
               </h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={userStats.slice(0, 10) as any}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#374151' : '#e5e7eb'} />
-                  <XAxis 
-                    dataKey="sender" 
-                    tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280' }} />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-                      border: `1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'}`,
-                      borderRadius: '8px',
-                      color: theme === 'dark' ? '#ffffff' : '#000000'
-                    }}
-                  />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="pointer-events-none select-none">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={userStats.slice(0, 10) as any}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#374151' : '#e5e7eb'} />
+                    <XAxis 
+                      dataKey="sender" 
+                      tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280', fontSize: 12 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis tick={{ fill: theme === 'dark' ? '#9ca3af' : '#6b7280' }} />
+                    <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                 채팅 비율
               </h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={userStats.slice(0, 8) as any}
-                    dataKey="count"
-                    nameKey="sender"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    label
-                  >
-                    {userStats.slice(0, 8).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-                      border: `1px solid ${theme === 'dark' ? '#374151' : '#e5e7eb'}`,
-                      borderRadius: '8px',
-                      color: theme === 'dark' ? '#ffffff' : '#000000'
-                    }}
-                  />
-                  <Legend wrapperStyle={{ color: theme === 'dark' ? '#ffffff' : '#000000' }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="pointer-events-none select-none">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={userStats.slice(0, 8) as any}
+                      dataKey="count"
+                      nameKey="sender"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      label
+                    >
+                      {userStats.slice(0, 8).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Legend wrapperStyle={{ color: theme === 'dark' ? '#ffffff' : '#000000' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 lg:col-span-2">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                🏆 채팅량 순위
+                채팅 순위
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -242,7 +229,7 @@ export default function Dashboard() {
                             index === 2 ? 'bg-orange-400 text-orange-900' :
                             'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
                           }`}>
-                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                            {index === 0 ? '1' : index === 1 ? '2' : index === 2 ? '3' : index + 1}
                           </span>
                         </td>
                         <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{stat.sender}</td>
